@@ -22,9 +22,9 @@ var StoriesSchema = new Schema({
       type: String,
       required: false
   },
-  Story: {
+  comment: {
     type: Schema.Types.ObjectId,
-    ref: "Story"
+    ref: "comment"
   }
 });
 

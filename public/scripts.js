@@ -6,36 +6,39 @@ $(document).on("click", ".btn-info",function(){
     scrape();
     document.location.reload();
 });
-// Whenever someone clicks a p tag
+
+//on click of comment btn
 $(document).on("click", ".btn-secondary", function() {
     // Empty the notes from the note section
-    $("#notes").empty();
+    
     // Save the id from the p tag
     var thisId = $(this).attr("data-id");
-  
+
     // Now make an ajax call for the Article
     $.ajax({
       method: "GET",
-      url: "/articles/" + thisId
-    })
-      // With that done, add the note information to the page
-      .then(function(data) {
-        console.log(data);
+      url: "/stories/" + thisId
+    }).then(function(data) {
+        console.log("data",data);
         // The title of the article
-        $("#notes").append("<h2>" + data.title + "</h2>");
+        $("#noteTitle").empty();
+        $("#noteTitle").append("<h2>" + data.headline + "</h2>");
         // An input to enter a new title
-        $("#notes").append("<input id='titleinput' name='title' >");
+        $("#commentTitle").empty();
+        $("#commentTitle").append("<h4>Comment Title</h4>","<input id='titleinput' name='title' class='form-control' >");
         // A textarea to add a new note body
-        $("#notes").append("<textarea id='bodyinput' name='body'></textarea>");
+        $("#commentInput").empty();
+        $("#commentInput").append("<h4>Comment</h4>","<textarea id='bodyinput' name='body' class='form-control' rows='3'></textarea>");
         // A button to submit a new note, with the id of the article saved to it
-        $("#notes").append("<button data-id='" + data._id + "' id='savenote'>Save Note</button>");
+        $("#commentBtn").empty();
+        $("#commentBtn").append("<button class='btn btn-primary mt-2' data-id='" + data._id + "' id='savenote'>Save Note</button>");
   
         // If there's a note in the article
-        if (data.note) {
+        if (data.comment) {
           // Place the title of the note in the title input
-          $("#titleinput").val(data.note.title);
+          $("#titleinput").val(data.comment.title);
           // Place the body of the note in the body textarea
-          $("#bodyinput").val(data.note.body);
+          $("#bodyinput").val(data.comment.body);
         }
       });
   });
@@ -48,7 +51,7 @@ $(document).on("click", ".btn-secondary", function() {
     // Run a POST request to change the note, using what's entered in the inputs
     $.ajax({
       method: "POST",
-      url: "/articles/" + thisId,
+      url: "/stories/" + thisId,
       data: {
         // Value taken from title input
         title: $("#titleinput").val(),
@@ -59,24 +62,24 @@ $(document).on("click", ".btn-secondary", function() {
       // With that done
       .then(function(data) {
         // Log the response
-        console.log(data);
+        console.log("commentData",data);
         // Empty the notes section
         $("#notes").empty();
       });
   
     // Also, remove the values entered in the input and textarea for note entry
-    $("#titleinput").val("");
-    $("#bodyinput").val("");
+    $("#commentTitle").val("");
+    $("#commentInput").val("");
   });
 
 const makeAccordian = (data) => {
     let accordionHolder = $("#accordion");
     accordionHolder.empty();
     data.forEach((element, i) => {
-        let cardDiv = $('<div>', {class: "card", "data-id": data[i]._id});
+        let cardDiv = $('<div>', {class: "card"});
         let cardHeader = $('<div>', {class: "card-header"});
         let headerH2 = $("<h2>", {class: "mb-0"});
-        let headerBtn = $("<button>", {class: "btn btn-link", type: "button", "data-toggle": "collapse", "data-target": "#collapse"+i , "aria-expanded": "true", "aria-controls": "collapse"+i});
+        let headerBtn = $("<button>", {"data-id": data[i]._id, class: "btn btn-link", type: "button", "data-toggle": "collapse", "data-target": "#collapse"+i , "aria-expanded": "true", "aria-controls": "collapse"+i});
         headerBtn.text(data[i].headline);
         headerH2.append(headerBtn);
         cardHeader.append(headerH2);
@@ -85,7 +88,7 @@ const makeAccordian = (data) => {
         cardBody.text(data[i].summary);
         let cardBodyBtnHolder = $("<div>", {class: "text-center pb-4"});
         let cardBodyBtn = $("<a>", {href: data[i].url, class: "btn btn-primary", target: "_blank", rel: "noopener noreferrer"});
-        let commentBtn = $("<a>", {href: data[i].url, class: "mt-2 btn btn-secondary"});
+        let commentBtn = $("<a>", {"data-id": data[i]._id, class: "mt-2 btn btn-secondary", "data-toggle": "modal", "data-target": "#exampleModal"});
         let br = $("<br>");
         commentBtn.text("Add Comment");
         cardBodyBtn.text("Link to Full Story");
@@ -94,7 +97,7 @@ const makeAccordian = (data) => {
         cardDiv.append(cardHeader, collapseDiv);
         cardDiv.appendTo(accordionHolder);
     });
-    
+
 }
 
 function getStories(){
